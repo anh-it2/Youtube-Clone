@@ -1,93 +1,84 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './PlayVideo.css'
-import video1 from '../../assets/video.mp4'
 import like from '../../assets/like.png'
 import dislike from '../../assets/dislike.png'
 import share from '../../assets/share.png'
 import save from '../../assets/save.png'
 import jack from '../../assets/jack.png'
 import user_profile from '../../assets/user_profile.jpg'
+import { API_KEY } from '../../data'
+import { value_converter } from '../../data'
+import moment from 'moment'
 
-const PlayVideo = () => {
+const PlayVideo = ({videoId}) => {
+
+    const [apiData, setApiData] = useState(null);
+
+    const fetVideoData = async () =>{
+         const videoDetails_url = `https://content-youtube.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet%2CcontentDetails%2Cstatistics&key=${API_KEY}`
+         await fetch(videoDetails_url).then(res=>res.json()).then(data => setApiData(data.items[0]))
+    }
+
+    useEffect((() =>{
+        fetVideoData();
+    }),[videoId])
+
+    const [channelData, setChannelData] = useState(null)
+    const [commentData, setCommentData] = useState([])
+    const fetchChannelData = async ()=>{
+            const channelDetail_url = `https://content-youtube.googleapis.com/youtube/v3/channels?id=${apiData.snippet.channelId}&part=snippet%2CcontentDetails%2Cstatistics&key=${API_KEY}`
+            await fetch(channelDetail_url).then(res=>res.json()).then(data=>setChannelData(data.items[0]))
+
+        const commentData_url = `https://content-youtube.googleapis.com/youtube/v3/commentThreads?videoId=${videoId}&part=snippet&key=${API_KEY}`
+        await fetch(commentData_url).then(res=>res.json()).then(data=>setCommentData(data.items))
+        console.log(commentData)
+    }
+
+    useEffect((()=>{
+        fetchChannelData()
+    }),[apiData])
   return (
     <div className='play-video'>
-        <video src={video1} controls autoPlay muted></video>
-        <h3>Create YouTube Clone Using React JS</h3>
+        <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <h3>{apiData? apiData.snippet.title:""}</h3>
         <div className="play-video-info">
-            <p>1525 Views &bull; 2 days ago</p>
+            <p>{apiData?value_converter(apiData.statistics.viewCount):''} Views &bull; {apiData?moment(apiData.snippet.publishedAt).fromNow():''}</p>
         <div>
-            <span><img src={like} alt="" />1224</span>
-            <span><img src={dislike} alt=''/>125</span>
+            <span><img src={like} alt="" />{apiData?value_converter(apiData.statistics.likeCount):123}</span>
+            <span><img src={dislike} alt=''/></span>
             <span><img src={share} alt=''/>Share</span>
-            <span><img src={save} alt=''/>125</span>
+            <span><img src={save} alt=''/></span>
         </div>      
         </div>
         <hr />
         <div className="publisher">
-            <img src={jack} alt="" />
+            <img src={channelData?channelData.snippet.thumbnails.default.url:''} alt="" />
             <div>
-                <p>GreateStack</p>
-                <span>1M Subcriber</span>
+                <p>{apiData?apiData.snippet.channelTitle:''}</p>
+                <span>{channelData?value_converter(channelData.statistics.subscriberCount):0} Subcriber</span>
             </div>
             <button>Subcribe</button>
         </div>
         <div className="vid-description">
-            <p>Create YouTube Clone Using React JS</p>
-            <p>Build Complete Website Like YouTube In React JS 2024</p>
+            <p>{apiData?apiData.snippet.description.slice(0,250):'Description here'}</p>
             <hr />
-            <h4>130 Comments</h4>
-            <div className="comment">
-                <img src={user_profile} alt="" />
+            <h4>{apiData?value_converter(apiData.statistics.commentCount):0} Comments</h4>
+            {commentData.map((comment)=>{
+                return (<>
+                <div  className="comment">
+                <img src={comment.snippet.topLevelComment.snippet.authorProfileImageUrl} alt="" />
                 <div>
-                    <h3>Jack Nicholson <span>1 day ago</span></h3>
-                    <p>In this tutorial we will make a YouTube clone web app project using React JS. In this react JS project</p>
+                    <h3> {comment.snippet.topLevelComment.snippet.authorDisplayName} <span></span></h3>
+                    <p>{comment.snippet.topLevelComment.snippet.textDisplay}</p>
                     <div className="comment-action">
                         <img src={like} alt="" />
-                        <span>244</span>
+                        <span>{value_converter(comment.snippet.topLevelComment.snippet.likeCount)}</span>
                         <img src={dislike} alt="" />
-
                     </div>
                 </div>
             </div>
-            <div className="comment">
-                <img src={user_profile} alt="" />
-                <div>
-                    <h3>Jack Nicholson <span>1 day ago</span></h3>
-                    <p>In this tutorial we will make a YouTube clone web app project using React JS. In this react JS project</p>
-                    <div className="comment-action">
-                        <img src={like} alt="" />
-                        <span>244</span>
-                        <img src={dislike} alt="" />
-                        
-                    </div>
-                </div>
-            </div>
-            <div className="comment">
-                <img src={user_profile} alt="" />
-                <div>
-                    <h3>Jack Nicholson <span>1 day ago</span></h3>
-                    <p>In this tutorial we will make a YouTube clone web app project using React JS. In this react JS project</p>
-                    <div className="comment-action">
-                        <img src={like} alt="" />
-                        <span>244</span>
-                        <img src={dislike} alt="" />
-                        
-                    </div>
-                </div>
-            </div>
-            <div className="comment">
-                <img src={user_profile} alt="" />
-                <div>
-                    <h3>Jack Nicholson <span>1 day ago</span></h3>
-                    <p>In this tutorial we will make a YouTube clone web app project using React JS. In this react JS project</p>
-                    <div className="comment-action">
-                        <img src={like} alt="" />
-                        <span>244</span>
-                        <img src={dislike} alt="" />
-                        
-                    </div>
-                </div>
-            </div>
+                </>)
+            })}
         </div>
     </div>
   )
